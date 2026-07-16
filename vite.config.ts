@@ -1,5 +1,5 @@
-import { configDefaults } from 'vitest/config'
-import { playwright } from 'vitest/browser-playwright'
+import { configDefaults } from 'vite-plus'
+import { playwright } from 'vite-plus/test/browser-playwright'
 import { defineConfig } from 'vite-plus'
 import { entries } from './scripts/aliases.js'
 
@@ -60,6 +60,7 @@ export default defineConfig({
           include: [
             'packages/reactivity/__tests__/gc.spec.ts',
             'packages/server-renderer/__tests__/ssrWatch.spec.ts',
+            'packages/server-renderer/__tests__/ssrRender.spec.ts',
           ],
         },
       },
@@ -71,6 +72,7 @@ export default defineConfig({
             ...configDefaults.exclude,
             'packages/reactivity/__tests__/gc.spec.ts',
             'packages/server-renderer/__tests__/ssrWatch.spec.ts',
+            'packages/server-renderer/__tests__/ssrRender.spec.ts',
             '**/e2e/**',
             '**/vapor-e2e-test/**',
             'packages/{vue,vue-compat,runtime-dom,runtime-vapor}/**',

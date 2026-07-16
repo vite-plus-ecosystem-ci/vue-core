@@ -40,7 +40,6 @@ import {
   onScopeDispose,
   queuePostFlushCb,
   renderSlot,
-  setCurrentInstance,
   setTransitionHooks as setVNodeTransitionHooks,
   shallowReactive,
   shallowRef,
@@ -92,9 +91,7 @@ import type { RawSlots, VaporSlot } from './componentSlots'
 import {
   currentSlotScopeIds,
   dynamicSlotsProxyHandlers,
-  getRawSlotsOwner,
   getSlot,
-  setCurrentSlotOwner,
   withOnceSlot,
 } from './componentSlots'
 import { renderEffect } from './renderEffect'
@@ -107,17 +104,9 @@ import {
   isHydrating,
   isHydrationAnchor,
   locateEndAnchor,
-  runWithoutHydration,
   setCurrentHydrationNode,
   hydrateNode as vaporHydrateNode,
 } from './dom/hydration'
-import {
-  insertionAnchor,
-  insertionIndex,
-  insertionParent,
-  resetInsertionState,
-  setInsertionState,
-} from './insertionState'
 import {
   type DynamicFragment,
   RenderContextFragment,
@@ -131,6 +120,7 @@ import {
 import {
   type SlotBoundaryContext,
   hasSlotFallback,
+  registerContentInvalid,
   trackSlotBoundaryDirtying,
   withSlotBoundary,
 } from './slotBoundary'
@@ -152,12 +142,7 @@ import {
   getVNodeKey,
   setTransitionHooks as setVaporTransitionHooks,
 } from './components/Transition'
-import {
-  interopKey,
-  isCollectingVdomSlotVNodes,
-  setInteropEnabled,
-  withVdomSlotVNodeCollection,
-} from './vdomInteropState'
+import { interopKey, setInteropEnabled } from './vdomInteropState'
 import {
   type KeepAliveInstance,
   activate,
@@ -695,16 +680,11 @@ const vaporSlotsProxyHandler: ProxyHandler<any> = {
         return cached.wrapped
       }
 
-      // Direct slots.default() calls may be used for vnode introspection.
-      // Try collecting VDOM child metadata first; if the Vapor slot cannot be
-      // represented as VDOM vnodes, fall back to the real renderSlot protocol.
-      const wrapped = (props?: Record<string, any>) => {
-        return (
-          normalizeVaporSlotVNodes(target, slot, props) || [
-            renderSlot({ [key]: slot }, key as string, props),
-          ]
-        )
-      }
+      // Create a wrapper that internally uses renderSlot for proper vapor slot handling
+      // This ensures that calling slots.default() works the same as renderSlot(slots, 'default')
+      const wrapped = (props?: Record<string, any>) => [
+        renderSlot({ [key]: slot }, key as string, props),
+      ]
       ;(wrapped as any).__vs = slot
       wrappers.set(key, { slot, wrapped })
       return wrapped
@@ -720,94 +700,6 @@ const vaporSlotsProxyHandler: ProxyHandler<any> = {
     if (!isString(key) || isInternalSlotKey(key)) return
     return dynamicSlotsProxyHandlers.getOwnPropertyDescriptor!(target, key)
   },
-}
-
-const collectedVdomSlotVNodes = new WeakMap<VaporFragment, VNode>()
-
-function normalizeVaporSlotVNodes(
-  rawSlots: RawSlots,
-  slot: Function,
-  props: Record<string, any> | undefined,
-): VNode[] | undefined {
-  if (props && hasVNodeSlotProps(props)) {
-    return
-  }
-  const scope = effectScope()
-  const owner = getRawSlotsOwner(rawSlots)
-  let value: any
-  try {
-    value = runVdomSlotVNodeCollection(() =>
-      scope.run(() =>
-        withVdomSlotVNodeCollection(() => {
-          const prevSlotOwner = setCurrentSlotOwner(owner)
-          const prevInstance = owner && setCurrentInstance(owner, scope)
-          try {
-            return slot(props)
-          } finally {
-            if (prevInstance) {
-              setCurrentInstance(...prevInstance)
-            }
-            setCurrentSlotOwner(prevSlotOwner)
-          }
-        }),
-      ),
-    )
-  } finally {
-    scope.stop()
-  }
-  const children = isArray(value) ? value : [value]
-  const vnodes: VNode[] = []
-  for (const child of children) {
-    if (isVNode(child)) {
-      vnodes.push(child)
-      continue
-    }
-    const vnode =
-      child &&
-      isObject(child) &&
-      collectedVdomSlotVNodes.get(child as VaporFragment)
-    if (!isVNode(vnode)) return
-    vnodes.push(vnode)
-  }
-  return vnodes
-}
-
-function hasVNodeSlotProps(props: Record<string, any>): boolean {
-  for (const key in props) {
-    const value = props[key]
-    if (isVNode(value)) {
-      return true
-    }
-    if (isArray(value)) {
-      for (let i = 0; i < value.length; i++) {
-        if (isVNode(value[i])) {
-          return true
-        }
-      }
-    }
-  }
-  return false
-}
-
-function runVdomSlotVNodeCollection<T>(fn: () => T): T {
-  const prevInsertionParent = insertionParent
-  const prevInsertionAnchor = insertionAnchor
-  const prevInsertionIndex = insertionIndex
-  try {
-    // Collection only probes metadata. It must not adopt DOM or advance the
-    // Vapor hydration cursor while evaluating the slot body.
-    return runWithoutHydration(fn)
-  } finally {
-    if (prevInsertionParent) {
-      setInsertionState(
-        prevInsertionParent,
-        prevInsertionAnchor,
-        prevInsertionIndex,
-      )
-    } else {
-      resetInsertionState()
-    }
-  }
 }
 
 let vdomHydrateNode: HydrationRenderer['hydrateNode'] | undefined
@@ -1062,7 +954,7 @@ function createVDOMComponent(
     ? getKeepAliveContext(parentComponent)
     : null
 
-  if (!isCollectingVdomSlotVNodes && keepAliveCtx) {
+  if (keepAliveCtx) {
     keepAliveCtx.processShapeFlag(frag)
     // for VDOM async components, trigger cacheBlock after resolution
     if ((component as any).__asyncLoader) {
@@ -1085,13 +977,6 @@ function createVDOMComponent(
     parentComponent ? parentComponent.appContext : undefined,
     once,
   )
-
-  if (isCollectingVdomSlotVNodes) {
-    collectedVdomSlotVNodes.set(
-      frag,
-      createCollectedVDOMSlotVNode(component, rawProps, wrapper.rawSlots),
-    )
-  }
 
   // overwrite how the vdom instance handles props
   vnode.vi = (instance: ComponentInternalInstance) => {
@@ -1251,24 +1136,6 @@ function createVDOMComponent(
   }
 
   return frag
-}
-
-function createCollectedVDOMSlotVNode(
-  component: ConcreteComponent,
-  rawProps: LooseRawProps | null | undefined,
-  slots: RawSlots,
-): VNode {
-  // This vnode is returned to a VDOM slots.default() caller and may be rendered
-  // by the VDOM renderer directly. Keep it as a normal VDOM vnode; the real
-  // Vapor-owned interop mount path uses frag.vnode with vi instead.
-  const vnode = createVNode(
-    component,
-    rawProps && extend({}, new Proxy(rawProps, rawPropsProxyHandlers)),
-    slots === EMPTY_OBJ ? null : new Proxy(slots, vaporSlotsProxyHandler),
-  )
-  vnode.scopeId = getCurrentScopeId() || null
-  vnode.slotScopeIds = currentSlotScopeIds
-  return vnode
 }
 
 const rendererBridgeCache = new WeakMap<
@@ -1464,6 +1331,12 @@ function renderVDOMSlot(
   let isContentUpdateRecheck = false
   let localFallback: BlockFn | undefined
   let slotResolutionState!: SlotResolutionState
+  const cleanupInvalidContent = () => {
+    if (currentParentNode) {
+      removeAttachedNodes(contentState.nodes, currentParentNode)
+    }
+  }
+  const onContentInvalid = [cleanupInvalidContent]
   frag.isBlockValid = componentAsValid => {
     if (!contentResolved) return true
     return slotResolutionState.activeFallback
@@ -1476,12 +1349,14 @@ function renderVDOMSlot(
     },
     getFallback: (): BlockFn | undefined => localFallback,
     run: (fn, scope) => runWithRenderCtx(frag, fn, scope),
-    markDirty: () => markSlotResolutionDirty(slotResolutionState),
+    markDirty: force => markSlotResolutionDirty(slotResolutionState, force),
+    onContentInvalid,
   }
   slotResolutionState = {
     boundary,
     activeFallback: null,
     pendingRecheck: false,
+    pendingRecheckForce: false,
     isRenderingFallback: false,
     getContent: () => contentState.nodes,
     getParentNode: () => currentParentNode,
@@ -1498,7 +1373,9 @@ function renderVDOMSlot(
       }
     },
   }
-  if (slotRoot) trackSlotBoundaryDirtying(frag)
+  if (slotRoot) {
+    trackSlotBoundaryDirtying(frag, cleanupInvalidContent)
+  }
   localFallback = fallback
     ? once
       ? () => withOnceSlot(() => fallback(internals, parentComponent))
@@ -1993,12 +1870,21 @@ function renderVaporSlot(
     let slotResolutionState!: SlotResolutionState
     let ownedSlotFragment: SlotFragment | undefined
     let ownedSlotFragmentDirtyQueued = false
-    const markInteropSlotResolutionDirty = (): void => {
+    let ownedSlotFragmentDirtyForce = false
+    const onContentInvalid = [
+      () => {
+        if (currentParentNode) {
+          removeAttachedNodes(contentNodes, currentParentNode)
+        }
+      },
+    ]
+    const markInteropSlotResolutionDirty = (force?: boolean): void => {
       const target = ownedSlotFragment
       if (!target) {
-        markSlotResolutionDirty(slotResolutionState)
+        markSlotResolutionDirty(slotResolutionState, force)
         return
       }
+      ownedSlotFragmentDirtyForce = ownedSlotFragmentDirtyForce || !!force
       // When the inner SlotFragment owns the fallback, a single vdom flush
       // can dirty this slot multiple times; batch into one post-flush recheck
       // so it observes the settled re-rendered content.
@@ -2008,7 +1894,9 @@ function renderVaporSlot(
       ownedSlotFragmentDirtyQueued = true
       queuePostFlushCb(() => {
         ownedSlotFragmentDirtyQueued = false
-        markSlotResolutionDirty(target)
+        const force = ownedSlotFragmentDirtyForce
+        ownedSlotFragmentDirtyForce = false
+        markSlotResolutionDirty(target, force)
       })
     }
     const outletFallbackBoundary: SlotBoundaryContext = {
@@ -2028,11 +1916,13 @@ function renderVaporSlot(
         slotState.localFallback.value ? localFallback : undefined,
       run: (fn, scope) => runWithRenderCtx(frag, fn, scope),
       markDirty: markInteropSlotResolutionDirty,
+      onContentInvalid,
     }
     slotResolutionState = {
       boundary: localFallbackBoundary,
       activeFallback: null,
       pendingRecheck: false,
+      pendingRecheckForce: false,
       isRenderingFallback: false,
       getContent: () => contentNodes,
       getParentNode: () => currentParentNode,
@@ -2051,9 +1941,10 @@ function renderVaporSlot(
       },
     }
     const takePendingRecheck = (): boolean => {
-      const shouldRecheck = slotResolutionState.pendingRecheck
+      const force = slotResolutionState.pendingRecheckForce
       slotResolutionState.pendingRecheck = false
-      return shouldRecheck
+      slotResolutionState.pendingRecheckForce = false
+      return force
     }
 
     const dispose = (parentNode?: ParentNode): void => {
@@ -2086,6 +1977,7 @@ function renderVaporSlot(
       const hasInteropFallback =
         !!slotState.localFallback.value || !!slotState.outletFallback.value
       slotResolutionState.pendingRecheck = false
+      slotResolutionState.pendingRecheckForce = false
       let finish: ((contentValid: boolean) => void) | undefined
       const finishHydratingContent = (contentValid: boolean): void => {
         if (!finish) return
@@ -2160,6 +2052,7 @@ function renderVaporSlot(
       }
 
       slotResolutionState.pendingRecheck = false
+      slotResolutionState.pendingRecheckForce = false
       frag.insert = (parentNode, anchor) => {
         currentParentNode = parentNode
         currentAnchor = anchor
@@ -2324,6 +2217,14 @@ function createVNodeChildrenFragment(
   let isMounted = false
   let isRenderEffectStarted = false
   const scope = effectScope()
+  const cleanupInvalidContent = () => {
+    if (currentParentNode) {
+      removeAttachedNodes(frag.nodes, currentParentNode)
+    }
+  }
+  if (frag.slotBoundary) {
+    registerContentInvalid(frag.slotBoundary, cleanupInvalidContent, frag)
+  }
 
   const syncResolvedNodes = (children: VNode[] = currentChildren): boolean => {
     const prevValid = contentResolved ? contentValid : true
@@ -2337,6 +2238,17 @@ function createVNodeChildrenFragment(
     }
     contentResolved = true
     return prevValid !== contentValid
+  }
+  const syncResolvedNodesAndCleanup = (
+    children: VNode[] = currentChildren,
+  ): boolean => {
+    const validityChanged = syncResolvedNodes(children)
+    if (!contentValid && frag.slotBoundary) {
+      cleanupInvalidContent()
+      currentVNode = null
+      currentChildren = EMPTY_VNODES
+    }
+    return validityChanged
   }
 
   const notifyUpdated = (validityChanged = false): void => {
@@ -2395,7 +2307,7 @@ function createVNodeChildrenFragment(
             trackSlotVNodeUpdatesWithRefresh(
               currentVNode,
               () => {
-                notifyUpdated(syncResolvedNodes(nextChildren))
+                notifyUpdated(syncResolvedNodesAndCleanup(nextChildren))
               },
               notifyBeforeUpdate,
             )
@@ -2416,7 +2328,7 @@ function createVNodeChildrenFragment(
             trackSlotVNodeUpdatesWithRefresh(
               nextVNode,
               () => {
-                notifyUpdated(syncResolvedNodes(nextChildren))
+                notifyUpdated(syncResolvedNodesAndCleanup(nextChildren))
               },
               notifyBeforeUpdate,
             )
@@ -2435,7 +2347,7 @@ function createVNodeChildrenFragment(
             currentVNode = nextVNode
           }
 
-          const validityChanged = syncResolvedNodes()
+          const validityChanged = syncResolvedNodesAndCleanup()
           if (isHydrating) {
             if (isMounted && frag.onUpdated) {
               frag.onUpdated.forEach(hook => hook())
@@ -2472,7 +2384,7 @@ function createVNodeChildrenFragment(
         trackSlotVNodeUpdatesWithRefresh(
           currentVNode,
           () => {
-            notifyUpdated(syncResolvedNodes(currentChildren))
+            notifyUpdated(syncResolvedNodesAndCleanup(currentChildren))
           },
           notifyBeforeUpdate,
         )
