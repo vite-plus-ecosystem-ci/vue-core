@@ -1,0 +1,113 @@
+.npmrc
+  s_8c76a2b3e20f9b::t_c9e93fe4310211 1-2
+package.json
+  s_8c76a2b3e20f9b::t_c87c900ba93ec1 59-61,92-93
+packages-private/local-playground/package.json
+  s_5049d72a2fb6ba::t_50446c1991a37a 7,9
+packages-private/local-playground/vite.config.ts
+  s_0badcd35129243::t_20f65180e8d7ae 1
+packages-private/vapor-e2e-test/__tests__/e2eUtils.ts
+  s_8c76a2b3e20f9b::t_5f48b0849d5926 1
+packages-private/vapor-e2e-test/__tests__/setupBrowser.ts
+  s_8c76a2b3e20f9b::t_0df6f0d945be47 1
+packages-private/vapor-e2e-test/__tests__/todomvc.spec.ts
+  s_8c76a2b3e20f9b::t_2ac6e243247385 1
+packages-private/vapor-e2e-test/__tests__/transition-group.spec.ts
+  s_738d33a6d3cd16::t_def21e346146d7 2
+packages-private/vapor-e2e-test/package.json
+  s_8c76a2b3e20f9b::t_000dbec288a9d7 16-17
+packages-private/vite-debug/package.json
+  s_5049d72a2fb6ba::t_512f6e0a067a27 6-8
+packages/compiler-sfc/__tests__/compileScript.spec.ts
+  s_738d33a6d3cd16::t_63dbd27536597c 1
+packages/reactivity/__benchmarks__/computed.bench.ts
+  s_0badcd35129243::t_15357627f0303c 1
+packages/reactivity/__benchmarks__/effect.bench.ts
+  s_0badcd35129243::t_8d56181d8c7fea 1
+packages/reactivity/__benchmarks__/reactiveArray.bench.ts
+  s_0badcd35129243::t_fb12e78487049b 1
+packages/reactivity/__benchmarks__/reactiveMap.bench.ts
+  s_0badcd35129243::t_c87c9309f2876d 1
+packages/reactivity/__benchmarks__/reactiveObject.bench.ts
+  s_0badcd35129243::t_4eab0842f37d0b 1
+packages/reactivity/__benchmarks__/ref.bench.ts
+  s_5049d72a2fb6ba::t_502d2a7b44b99e 1
+packages/runtime-core/__tests__/apiOptions.spec.ts
+  s_8c76a2b3e20f9b::t_80048f41cb3399 4
+packages/runtime-core/__tests__/apiWatch.bench.ts
+  s_5049d72a2fb6ba::t_6c8bd4e32a580d 2
+packages/runtime-dom/__tests__/customElement.spec.ts
+  s_8c76a2b3e20f9b::t_464700d8c46599 1
+packages/runtime-dom/__tests__/customizedBuiltIn.spec.ts
+  s_0badcd35129243::t_432ab6d81944c1 1
+packages/runtime-vapor/__tests__/bench/block.bench.ts
+  s_8c76a2b3e20f9b::t_d54f5acf4f73e1 1
+packages/runtime-vapor/__tests__/bench/setClass.bench.ts
+  s_8c76a2b3e20f9b::t_d1a127db0ecca9 1
+packages/runtime-vapor/__tests__/customElement.spec.ts
+  s_8c76a2b3e20f9b::t_0d0412400a87b3 1
+packages/runtime-vapor/__tests__/directives/customDirective.spec.ts
+  s_8c76a2b3e20f9b::t_89e5fd8e26d479 9
+packages/runtime-vapor/__tests__/directives/vShow.spec.ts
+  s_8c76a2b3e20f9b::t_d8449870e86fcc 10
+packages/runtime-vapor/__tests__/if.spec.ts
+  s_8c76a2b3e20f9b::t_e097a73c1be7a4 15
+packages/server-renderer/__tests__/createBuffer.bench.ts
+  s_5049d72a2fb6ba::t_6d174564518a56 1
+packages/server-renderer/__tests__/unrollBuffer.bench.ts
+  s_5049d72a2fb6ba::t_ca33f78d084b65 1
+packages/vue-compat/__tests__/instance.spec.ts
+  s_0badcd35129243::t_8c4833cffa4873 1
+packages/vue/__tests__/e2e/e2eBrowserUtils.ts
+  s_8c76a2b3e20f9b::t_2c39be43beb638 1
+packages/vue/__tests__/e2e/trusted-types.spec.ts
+  s_8c76a2b3e20f9b::t_8f6d023d60aa6f 4
+packages/vue/package.json
+  s_8c76a2b3e20f9b::t_95ef4b1cee9da2 113-115
+pnpm-workspace.yaml
+  s_8c76a2b3e20f9b::t_84de280e0c05e1 10,14-18,38-42,45-58
+scripts/setup-vitest.ts
+  s_0badcd35129243::t_421abeda0710b3 1
+vite.config.ts
+  s_0badcd35129243::t_9ad491d9b97f74 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "94154d3a0fee176616ce8f32f9cbccb60f885ed1",
+  "prompts": {},
+  "sessions": {
+    "s_0badcd35129243": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075d2906effeFKmSj2JpEGI4cD",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "wan9chi <dk4rest@gmail.com>"
+    },
+    "s_5049d72a2fb6ba": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075d29066ffehEn1pK41f060pe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "wan9chi <dk4rest@gmail.com>"
+    },
+    "s_738d33a6d3cd16": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075d29117ffes1IRWCYRPT5qsp",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "wan9chi <dk4rest@gmail.com>"
+    },
+    "s_8c76a2b3e20f9b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075d29074ffeAbsyHCaPe6VLBC",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "wan9chi <dk4rest@gmail.com>"
+    }
+  }
+}
