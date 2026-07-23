@@ -7,12 +7,12 @@ catalog:
   '@babel/types': ^7.29.7
   'entities': '^7.0.1'
   'estree-walker': ^2.0.2
-  'vite': npm:@voidzero-dev/vite-plus-core@0.0.0-commit.9855245a469b178066c25a5d45c971c130565d89
+  'vite': npm:@voidzero-dev/vite-plus-core@0.0.0-commit.57939439ddcb16d9f54ebf7d41432893182ee46d
   '@vitejs/plugin-vue': ^6.0.8
   'magic-string': ^0.30.21
   'source-map-js': ^1.2.1
   vitest: 4.1.10
-  vite-plus: 0.0.0-commit.9855245a469b178066c25a5d45c971c130565d89
+  vite-plus: 0.0.0-commit.57939439ddcb16d9f54ebf7d41432893182ee46d
   '@vitest/browser-playwright': 4.1.10
   '@vitest/coverage-v8': 4.1.10
   '@vitest/ui': 4.1.10
