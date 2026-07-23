@@ -115,14 +115,14 @@ export function insert(
   if (isVaporComponent(block)) {
     anchor = anchor === 0 ? parent.$fc || _child(parent) : anchor
     if (block.isMounted && !block.isDeactivated) {
-      insert(block.block!, parent, anchor)
+      insert(block.block!, parent, anchor, parentSuspense)
     } else {
       mountComponent(block, parent, anchor)
     }
   } else if (isArray(block)) {
     anchor = anchor === 0 ? parent.$fc || _child(parent) : anchor
     for (const b of block) {
-      insert(b, parent, anchor)
+      insert(b, parent, anchor, parentSuspense)
     }
   } else {
     insertFragment(block, parent, anchor, parentSuspense)
@@ -168,7 +168,12 @@ export function insertFragment(
     anchor = block.anchor
   }
   if (block.insert) {
-    block.insert(parent, anchor, (block as TransitionBlock).$transition)
+    block.insert(
+      parent,
+      anchor,
+      parentSuspense,
+      (block as TransitionBlock).$transition,
+    )
   } else {
     insert(block.nodes, parent, anchor, parentSuspense)
   }
@@ -255,7 +260,12 @@ export function move(
     }
     // fragment
     if (block.insert) {
-      block.insert(parent, anchor, (block as TransitionBlock).$transition)
+      block.insert(
+        parent,
+        anchor,
+        parentSuspense,
+        (block as TransitionBlock).$transition,
+      )
     } else {
       move(
         block.nodes,
@@ -308,6 +318,12 @@ export function removeFragment(
   block: VaporFragment | DynamicFragment,
   parent?: ParentNode,
 ): void {
+  const onRemove = block.onRemove
+  if (onRemove) {
+    for (let i = 0; i < onRemove.length; i++) {
+      onRemove[i]()
+    }
+  }
   if (block.remove) {
     block.remove(parent, (block as TransitionBlock).$transition)
   } else {
