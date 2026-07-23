@@ -1,0 +1,19 @@
+pnpm-workspace.yaml
+  s_c676b397870adf::t_711c766155edec 10,15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9b399bd67d73b01636cb452bca41f104e580de20",
+  "prompts": {},
+  "sessions": {
+    "s_c676b397870adf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_073404abdffevDLn9SGdc8CBuN",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "wan9chi <dk4rest@gmail.com>"
+    }
+  }
+}
