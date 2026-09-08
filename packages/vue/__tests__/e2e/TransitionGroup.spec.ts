@@ -872,8 +872,13 @@ describe('e2e: TransitionGroup', () => {
         const el = document.querySelector('ul li:nth-child(1)')
         const p = new Promise(resolve => {
           el!.addEventListener('transitionstart', () => {
-            const new_top = el!.getBoundingClientRect().top
-            resolve(new_top)
+            // The start event can fire before the element moves. Wait for a frame
+            // to finish before measuring the transition's progress.
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                resolve(el!.getBoundingClientRect().top)
+              })
+            })
           })
         })
         ;(document.querySelector('#toggleBtn') as any)!.click()
