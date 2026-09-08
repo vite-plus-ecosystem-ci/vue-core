@@ -7,12 +7,12 @@ catalog:
   '@babel/types': ^7.29.8
   'entities': '^7.0.1'
   'estree-walker': ^2.0.2
-  'vite': npm:@voidzero-dev/vite-plus-core@0.3.0
+  'vite': npm:@voidzero-dev/vite-plus-core@0.0.0-commit.6d65e1780791e2b24b27cf7deb63f57a420e78de
   '@vitejs/plugin-vue': ^6.0.8
   'magic-string': ^0.30.21
   'source-map-js': ^1.2.1
   vitest: 4.1.11
-  vite-plus: 0.3.0
+  vite-plus: 0.0.0-commit.6d65e1780791e2b24b27cf7deb63f57a420e78de
   '@vitest/browser-playwright': 4.1.11
   '@vitest/coverage-v8': 4.1.11
   '@vitest/ui': 4.1.11
@@ -45,8 +45,21 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   # Renovate security update: postcss@8.5.23
   - postcss@8.5.23
+  - vite-plus
+  - '@voidzero-dev/*'
+  - oxlint
+  - '@oxlint/*'
+  - oxlint-tsgolint
+  - '@oxlint-tsgolint/*'
+  - oxfmt
+  - '@oxfmt/*'
+  - vitest
+  - '@vitest/*'
 overrides:
   vite@*: 'catalog:'
   vitest@*: 'catalog:'
 
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  - vite-plus
+  - '@voidzero-dev/*'

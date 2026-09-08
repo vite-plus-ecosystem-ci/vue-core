@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@v1.19.0
         with:
           node-version-file: '.node-version'
           cache: true
@@ -43,3 +43,5 @@ jobs:
 
       - name: Release
         run: vpx pkg-pr-new publish --compact --pnpm './packages/*' --packageManager=pnpm,npm,yarn
+        # Ecosystem smoke test: publishing needs credentials unavailable on the fork.
+        if: ${{ github.repository_owner != 'vite-plus-ecosystem-ci' }}

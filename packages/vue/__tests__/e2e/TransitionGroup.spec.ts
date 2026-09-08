@@ -872,8 +872,11 @@ describe('e2e: TransitionGroup', () => {
         const el = document.querySelector('ul li:nth-child(1)')
         const p = new Promise(resolve => {
           el!.addEventListener('transitionstart', () => {
-            const new_top = el!.getBoundingClientRect().top
-            resolve(new_top)
+            // Measure 50 ms into the 500 ms transition, independent of frame timing.
+            const animation = el!.getAnimations()[0]
+            animation.pause()
+            animation.currentTime = 50
+            resolve(el!.getBoundingClientRect().top)
           })
         })
         ;(document.querySelector('#toggleBtn') as any)!.click()
