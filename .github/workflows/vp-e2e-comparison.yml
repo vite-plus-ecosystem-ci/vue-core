@@ -27,6 +27,16 @@ jobs:
           node-version-file: '.node-version'
           run-install: false
           cache: false
+      - name: Allow preview packages in the comparison
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('pnpm-workspace.yaml')
+          content = re.sub(r'^minimumReleaseAge: .+$', 'minimumReleaseAge: 0', path.read_text(), flags=re.M)
+          content += "\ntrustPolicyExclude:\n  - vite-plus\n  - '@voidzero-dev/*'\n"
+          path.write_text(content)
+          PY
       - name: Migrate the same project base
         run: vp migrate . --no-interactive
       - name: Check installed versions
