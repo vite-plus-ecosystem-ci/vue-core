@@ -1,0 +1,45 @@
+name: Vite+ E2E comparison
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '0.3.1'
+          - '0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: '958580bfc1338419438e2e2435376b3f5bc90ef2'
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@9fd26ff49f9b5e6276c2b493da4454ad4527f7f4 # v1.20.0
+        with:
+          version: ${{ matrix.version }}
+          node-version-file: '.node-version'
+          run-install: false
+          cache: false
+      - name: Migrate the same project base
+        run: vp migrate . --no-interactive
+      - name: Check installed versions
+        run: vp why -r vite-plus vite vitest
+      - run: vp install --frozen-lockfile
+      - run: node node_modules/puppeteer/install.mjs
+      - run: vp exec playwright install chromium
+      - name: Run the full E2E suite
+        run: vp run test-e2e
+      - name: Preserve dependency graph
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vp-e2e-${{ matrix.version }}
+          path: pnpm-lock.yaml
+          retention-days: 7
