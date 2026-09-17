@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@v1.20.0
         with:
           node-version-file: '.node-version'
           cache: true
@@ -41,5 +41,6 @@ jobs:
       - name: Build
         run: vp run build --withTypes
 
-      - name: Release
+      - if: ${{ github.repository_owner != 'vite-plus-ecosystem-ci' }}
+        name: Release
         run: vpx pkg-pr-new publish --compact --pnpm './packages/*' --packageManager=pnpm,npm,yarn
