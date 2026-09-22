@@ -1,19 +1,25 @@
-import { bench, describe } from 'vitest'
+import { describe, test } from 'vite-plus/test'
 import type { Ref } from '../src'
 import { effect, ref } from '../dist/reactivity.esm-browser.prod'
+
+function benchmark(name: string, run: () => unknown) {
+  test(name, async ({ bench }) => {
+    await bench(name, run).run()
+  })
+}
 
 describe('effect', () => {
   {
     let i = 0
     const n = ref(0)
     effect(() => n.value)
-    bench('single ref invoke', () => {
+    benchmark('single ref invoke', () => {
       n.value = i++
     })
   }
 
   function benchEffectCreate(size: number) {
-    bench(`create an effect that tracks ${size} refs`, () => {
+    benchmark(`create an effect that tracks ${size} refs`, () => {
       const refs: Ref[] = []
       for (let i = 0; i < size; i++) {
         refs.push(ref(i))
@@ -32,7 +38,7 @@ describe('effect', () => {
   benchEffectCreate(1000)
 
   function benchEffectCreateAndStop(size: number) {
-    bench(`create and stop an effect that tracks ${size} refs`, () => {
+    benchmark(`create and stop an effect that tracks ${size} refs`, () => {
       const refs: Ref[] = []
       for (let i = 0; i < size; i++) {
         refs.push(ref(i))
@@ -62,7 +68,7 @@ describe('effect', () => {
         refs[i].value
       }
     })
-    bench(`1 effect, mutate ${size} refs`, () => {
+    benchmark(`1 effect, mutate ${size} refs`, () => {
       for (let i = 0; i < size; i++) {
         refs[i].value = i + j++
       }
@@ -86,7 +92,7 @@ describe('effect', () => {
         }
       }
     })
-    bench(`${size} refs branch toggle`, () => {
+    benchmark(`${size} refs branch toggle`, () => {
       toggle.value = !toggle.value
     })
   }
@@ -101,7 +107,7 @@ describe('effect', () => {
     for (let i = 0; i < size; i++) {
       effect(() => n.value)
     }
-    bench(`1 ref invoking ${size} effects`, () => {
+    benchmark(`1 ref invoking ${size} effects`, () => {
       n.value = i++
     })
   }

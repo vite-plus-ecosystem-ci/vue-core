@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { describe, test } from 'vite-plus/test'
 
 import { createBuffer as _createBuffer } from '../src/render'
 
@@ -6,10 +6,23 @@ import { createBuffer as _createBuffer } from '../src/render'
 // https://github.com/vitest-dev/vitest/issues/6903
 const createBuffer = _createBuffer
 
+function benchmark(
+  name: string,
+  run: () => unknown,
+  options?: { setup?: () => void },
+) {
+  test(name, async ({ bench }) => {
+    await bench(name, () => {
+      options?.setup?.()
+      return run()
+    }).run()
+  })
+}
+
 describe('createBuffer', () => {
   let stringBuffer = createBuffer()
 
-  bench(
+  benchmark(
     'string only',
     () => {
       for (let i = 0; i < 10; i += 1) {
@@ -25,7 +38,7 @@ describe('createBuffer', () => {
 
   let stringNestedBuffer = createBuffer()
 
-  bench(
+  benchmark(
     'string with nested',
     () => {
       for (let i = 0; i < 10; i += 1) {
@@ -45,7 +58,7 @@ describe('createBuffer', () => {
     },
   )
 
-  bench(
+  benchmark(
     'string with nested async',
     () => {
       for (let i = 0; i < 10; i += 1) {

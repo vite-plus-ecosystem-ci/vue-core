@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { describe, test } from 'vite-plus/test'
 
 import { type SSRBuffer, createBuffer } from '../src/render'
 import { unrollBuffer as _unrollBuffer } from '../src/renderToString'
@@ -6,6 +6,19 @@ import { unrollBuffer as _unrollBuffer } from '../src/renderToString'
 // move to local const to avoid import access overhead
 // https://github.com/vitest-dev/vitest/issues/6903
 const unrollBuffer = _unrollBuffer
+
+function benchmark(
+  name: string,
+  run: () => unknown,
+  options?: { setup?: () => void },
+) {
+  test(name, async ({ bench }) => {
+    await bench(name, () => {
+      options?.setup?.()
+      return run()
+    }).run()
+  })
+}
 
 function createSyncBuffer(levels: number, itemsPerLevel: number): SSRBuffer {
   const buffer = createBuffer()
@@ -52,7 +65,7 @@ describe('unrollBuffer', () => {
   let syncBuffer = createBuffer().getBuffer()
   let mixedBuffer = createBuffer().getBuffer()
 
-  bench(
+  benchmark(
     'sync',
     () => {
       return unrollBuffer(syncBuffer) as any
@@ -64,7 +77,7 @@ describe('unrollBuffer', () => {
     },
   )
 
-  bench(
+  benchmark(
     'mixed',
     () => {
       return unrollBuffer(mixedBuffer) as any
