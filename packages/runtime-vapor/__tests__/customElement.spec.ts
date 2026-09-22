@@ -45,6 +45,14 @@ describe('defineVaporCustomElement', () => {
     container.innerHTML = ''
   })
 
+  afterEach(async () => {
+    container.innerHTML = ''
+    for (const child of [...document.body.children]) {
+      if (child !== container) child.remove()
+    }
+    await nextTick()
+  })
+
   delegateEvents('input', 'click', 'mousedown')
   function render(tag: string, props: any) {
     const root = document.createElement('div')

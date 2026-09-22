@@ -1,4 +1,4 @@
-import { test, describe } from 'vite-plus/test'
+import { describe, test } from 'vite-plus/test'
 import { ref } from '../dist/reactivity.esm-browser.prod'
 
 describe('ref', () => {

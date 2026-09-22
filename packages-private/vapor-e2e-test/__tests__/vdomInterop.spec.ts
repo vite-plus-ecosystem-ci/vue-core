@@ -26,7 +26,7 @@ test(
   async () => {
     await expect
       .element(css('.vapor > h2'))
-      .toHaveTextContent('Vapor component in VDOM')
+      .toHaveTextContent('This is a Vapor component in VDOM')
 
     expect(css('.vapor-prop')).toHaveTextContent('hello')
 
