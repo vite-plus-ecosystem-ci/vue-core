@@ -43,6 +43,9 @@ peerDependencyRules:
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  # ecosystem-ci smoke test: preview builds carry no provenance and are brand new
+  - vite-plus
+  - '@voidzero-dev/*'
   # Renovate security update: postcss@8.5.23
   - postcss@8.5.23
 overrides:
@@ -50,3 +53,7 @@ overrides:
   vitest@*: 'catalog:'
 
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  # ecosystem-ci smoke test: preview builds carry no provenance and are brand new
+  - vite-plus
+  - '@voidzero-dev/*'
