@@ -43,6 +43,21 @@ peerDependencyRules:
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  # ecosystem-ci smoke test: preview builds and freshly pinned toolchain packages
+  - '@oxc-project/*'
+  - oxlint
+  - '@oxlint/*'
+  - oxfmt
+  - '@oxfmt/*'
+  - oxlint-tsgolint
+  - '@oxlint-tsgolint/*'
+  - vitest
+  - '@vitest/*'
+  - tinybench
+  - yuku-core
+  - yuku-parser
+  - '@yuku-core/*'
+  - '@yuku-toolchain/*'
   # ecosystem-ci smoke test: preview builds carry no provenance and are brand new
   - vite-plus
   - '@voidzero-dev/*'
