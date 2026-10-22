@@ -7,15 +7,15 @@ catalog:
   '@babel/types': ^7.29.8
   'entities': '^7.0.1'
   'estree-walker': ^2.0.2
-  'vite': npm:@voidzero-dev/vite-plus-core@1.1.0
+  'vite': npm:@voidzero-dev/vite-plus-core@0.0.0-commit.6bc2d240a024170c08fbc831f0c201c162afd22e
   '@vitejs/plugin-vue': ^6.0.10
   'magic-string': ^0.30.21
   'source-map-js': ^1.2.2
-  vitest: 5.0.3
-  vite-plus: 1.1.0
-  '@vitest/browser-playwright': 5.0.3
-  '@vitest/coverage-v8': 5.0.3
-  '@vitest/ui': 5.0.3
+  vitest: 5.0.5
+  vite-plus: 0.0.0-commit.6bc2d240a024170c08fbc831f0c201c162afd22e
+  '@vitest/browser-playwright': 5.0.5
+  '@vitest/coverage-v8': 5.0.5
+  '@vitest/ui': 5.0.5
 
 allowBuilds:
   '@parcel/watcher': true
@@ -43,6 +43,24 @@ peerDependencyRules:
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  # ecosystem-ci smoke test: preview builds and freshly pinned toolchain packages
+  - '@oxc-project/*'
+  - oxlint
+  - '@oxlint/*'
+  - oxfmt
+  - '@oxfmt/*'
+  - oxlint-tsgolint
+  - '@oxlint-tsgolint/*'
+  - vitest
+  - '@vitest/*'
+  - tinybench
+  - yuku-core
+  - yuku-parser
+  - '@yuku-core/*'
+  - '@yuku-toolchain/*'
+  # ecosystem-ci smoke test: preview builds carry no provenance and are brand new
+  - vite-plus
+  - '@voidzero-dev/*'
   # Renovate security update: postcss@8.5.23
   - postcss@8.5.23
 overrides:
@@ -50,3 +68,7 @@ overrides:
   vitest@*: 'catalog:'
 
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  # ecosystem-ci smoke test: preview builds carry no provenance and are brand new
+  - vite-plus
+  - '@voidzero-dev/*'
