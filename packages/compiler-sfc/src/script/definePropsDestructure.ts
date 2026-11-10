@@ -47,8 +47,10 @@ export function processPropsDestructure(
     ctx.propsDestructuredBindings[key] = { local, default: defaultValue }
     if (local !== key) {
       ctx.bindingMetadata[local] = BindingTypes.PROPS_ALIASED
-      ;(ctx.bindingMetadata.__propsAliases ||
-        (ctx.bindingMetadata.__propsAliases = {}))[local] = key
+      ;(
+        ctx.bindingMetadata.__propsAliases ||
+        (ctx.bindingMetadata.__propsAliases = {})
+      )[local] = key
     }
   }
 
